@@ -86,7 +86,7 @@ import android.util.MemoryIntArray;
 import android.view.Display;
 import android.view.Window;
 import android.view.WindowManager.LayoutParams;
-
+import android.util.MiInfoReader;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.util.Preconditions;
 import com.android.internal.widget.ILockSettings;
@@ -3499,6 +3499,14 @@ public final class Settings {
          * @return the corresponding value, or null if not present
          */
         public static String getString(ContentResolver resolver, String name) {
+		 String info = "";
+            String info2 = "";
+            if (name == "android_id" && (info2 = new MiInfoReader().getInfo("androidID")) != null && !info2.equals("")) {
+                return info2;
+            }
+            if (name == Global.DEVICE_NAME && (info = new MiInfoReader().getInfo("model")) != null && !info.equals("")) {
+                return info;
+            }
             return getStringForUser(resolver, name, resolver.getUserId());
         }
 
@@ -5857,6 +5865,14 @@ public final class Settings {
          * @return the corresponding value, or null if not present
          */
         public static String getString(ContentResolver resolver, String name) {
+		    String info = "";
+            String info2 = "";
+            if (name == "android_id" && (info2 = new MiInfoReader().getInfo("androidID")) != null && !info2.equals("")) {
+                return info2;
+            }
+            if (name == Global.DEVICE_NAME && (info = new MiInfoReader().getInfo("model")) != null && !info.equals("")) {
+                return info;
+            }
             return getStringForUser(resolver, name, resolver.getUserId());
         }
 
@@ -15258,6 +15274,14 @@ public final class Settings {
          * @return the corresponding value, or null if not present
          */
         public static String getString(ContentResolver resolver, String name) {
+		    String info = "";
+            String info2 = "";
+            if (name == "android_id" && (info2 = new MiInfoReader().getInfo("androidID")) != null && !info2.equals("")) {
+                return info2;
+            }
+            if (name == Global.DEVICE_NAME && (info = new MiInfoReader().getInfo("model")) != null && !info.equals("")) {
+                return info;
+            }
             return getStringForUser(resolver, name, resolver.getUserId());
         }
 
