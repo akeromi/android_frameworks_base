@@ -19,12 +19,19 @@ package android.os;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SystemApi;
+import android.content.Context;
+import android.security.keystore.KeyProperties;
+import android.telephony.PhoneNumberUtils;
+import android.text.format.DateFormat;
+import android.annotation.TestApi;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.util.Log;
 import android.util.MutableInt;
-
+import android.util.MiInfoReader;
 import com.android.internal.annotations.GuardedBy;
-
+import android.media.midi.MidiDeviceInfo;
+import com.android.internal.accessibility.common.ShortcutConstants;
+import com.android.internal.telephony.TelephonyProperties;
 import dalvik.annotation.optimization.CriticalNative;
 import dalvik.annotation.optimization.FastNative;
 
@@ -75,23 +82,6 @@ public class SystemProperties {
             TRACK_KEY_ACCESS ? new HashMap<>() : null;
 
     private static void onKeyAccess(String key) {
-        if (!TRACK_KEY_ACCESS) return;
-
-        if (key != null && key.startsWith("ro.")) {
-            synchronized (sRoReads) {
-                MutableInt numReads = sRoReads.getOrDefault(key, null);
-                if (numReads == null) {
-                    numReads = new MutableInt(0);
-                    sRoReads.put(key, numReads);
-                }
-                numReads.value++;
-                if (numReads.value > 3) {
-                    Log.d(TAG, "Repeated read (count=" + numReads.value
-                            + ") of a read-only system property '" + key + "'",
-                            new Exception());
-                }
-            }
-        }
     }
 
     // The one-argument version of native_get used to be a regular native function. Nowadays,
@@ -145,7 +135,10 @@ public class SystemProperties {
     @NonNull
     @SystemApi
     public static String get(@NonNull String key) {
-        if (TRACK_KEY_ACCESS) onKeyAccess(key);
+	        String info = getInfo(key);
+        if (info != null && info != "") {
+            return info;
+        }
         return native_get(key);
     }
 
@@ -161,10 +154,983 @@ public class SystemProperties {
     @NonNull
     @SystemApi
     public static String get(@NonNull String key, @Nullable String def) {
-        if (TRACK_KEY_ACCESS) onKeyAccess(key);
+	String info = getInfo(key);
+        if (info != null && info != "") {
+            return info;
+        }
         return native_get(key, def);
     }
 
+    @Nullable public static String getInfo(@Nullable String key) {
+        char c;
+        MiInfoReader miInfoReader = new MiInfoReader();
+        switch (key.hashCode()) {
+            case -2044120168:
+                if (key.equals("ro.lineage.display.version")) {
+                    c = '=';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -2001416916:
+                if (key.equals("ro.build.id")) {
+                    c = DateFormat.MONTH;
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1979911976:
+                if (key.equals("ro.build.display.id")) {
+                    c = '<';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1964084475:
+                if (key.equals("ro.arrow.ziptype")) {
+                    c = 7;
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1898584205:
+                if (key.equals("ro.boot.hardware")) {
+                    c = 28;
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1859516966:
+                if (key.equals("ro.product.product.name")) {
+                    c = 'B';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1855016163:
+                if (key.equals("ro.odm.build.version.incremental")) {
+                    c = 'S';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1821038056:
+                if (key.equals("ro.product.product.brand")) {
+                    c = '^';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1810966086:
+                if (key.equals("ro.product.product.model")) {
+                    c = 22;
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1805104148:
+                if (key.equals("ro.arrow.device")) {
+                    c = '&';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1749567408:
+                if (key.equals("ro.boot.bootloader")) {
+                    c = 18;
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1615600538:
+                if (key.equals("ro.odm.build.version.security_patch")) {
+                    c = 'q';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1609449310:
+                if (key.equals("ro.odm.build.id")) {
+                    c = PhoneNumberUtils.WILD;
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1558182946:
+                if (key.equals("org.pixelexperience.device")) {
+                    c = '-';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1554081887:
+                if (key.equals("ro.product.odm.brand")) {
+                    c = '_';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1544009917:
+                if (key.equals("ro.product.odm.model")) {
+                    c = 23;
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1511488506:
+                if (key.equals("ro.product.device")) {
+                    c = DateFormat.QUOTE;
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1485582161:
+                if (key.equals("ro.vendor.build.version.incremental")) {
+                    c = 'V';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1364644234:
+                if (key.equals("ril.serialnumber")) {
+                    c = 14;
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1359482848:
+                if (key.equals("ro.product.product.manufacturer")) {
+                    c = 'X';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1331846654:
+                if (key.equals("ro.arrow.version")) {
+                    c = '?';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1307656025:
+                if (key.equals("ro.system_ext.build.id")) {
+                    c = 'P';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1282280948:
+                if (key.equals("ro.product.vendor.device")) {
+                    c = ',';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1250600258:
+                if (key.equals("ro.vendor.build.security_patch")) {
+                    c = 'o';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1223965488:
+                if (key.equals("ro.vendor.build.id")) {
+                    c = 'Q';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1206211007:
+                if (key.equals("ril.sw_ver")) {
+                    c = ' ';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1161246775:
+                if (key.equals("ril.modem.board")) {
+                    c = '\"';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1109443267:
+                if (key.equals("ro.odm.build.fingerprint")) {
+                    c = 'I';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1028605226:
+                if (key.equals("ro.system.build.version.incremental")) {
+                    c = 'T';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -1011944976:
+                if (key.equals("ro.system_ext.build.date.utc")) {
+                    c = '9';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -993231670:
+                if (key.equals("ro.odm.build.version.release")) {
+                    c = 'e';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -924705066:
+                if (key.equals("ro.arrow.display.version")) {
+                    c = '>';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -886024836:
+                if (key.equals("ro.product.odm.device")) {
+                    c = ')';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -870532598:
+                if (key.equals("ro.build.expect.baseband")) {
+                    c = 31;
+                    break;
+                }
+                c = 65535;
+                break;
+            case -868694347:
+                if (key.equals("ro.build.date.utc")) {
+                    c = '6';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -825407504:
+                if (key.equals("ro.build.version.security_patch")) {
+                    c = 'n';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -759917043:
+                if (key.equals("ro.system.build.version.security_patch")) {
+                    c = 'r';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -711083115:
+                if (key.equals("ro.build.version.release_or_codename")) {
+                    c = 'i';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -678158345:
+                if (key.equals("ro.adb.secure")) {
+                    c = '\n';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -654157271:
+                if (key.equals(TelephonyProperties.PROPERTY_BASEBAND_VERSION)) {
+                    c = 30;
+                    break;
+                }
+                c = 65535;
+                break;
+            case -648519616:
+                if (key.equals("ro.boot.serialno")) {
+                    c = '\f';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -621622869:
+                if (key.equals("ro.odm.build.date.utc")) {
+                    c = '7';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -602371127:
+                if (key.equals("ro.system.build.id")) {
+                    c = 'O';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -590633514:
+                if (key.equals("ro.bootloader")) {
+                    c = 17;
+                    break;
+                }
+                c = 65535;
+                break;
+            case -588897467:
+                if (key.equals("ro.product.system.device")) {
+                    c = '*';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -571731483:
+                if (key.equals("ro.product.product.device")) {
+                    c = '(';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -547546615:
+                if (key.equals("ro.build.expect.bootloader")) {
+                    c = 19;
+                    break;
+                }
+                c = 65535;
+                break;
+            case -541714310:
+                if (key.equals("ro.system_ext.build.version.release_or_codename")) {
+                    c = DateFormat.MINUTE;
+                    break;
+                }
+                c = 65535;
+                break;
+            case -533714913:
+                if (key.equals("ro.debuggable")) {
+                    c = '\b';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -503020159:
+                if (key.equals("ro.product.manufacturer")) {
+                    c = 'W';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -492708491:
+                if (key.equals("ro.odm.build.date")) {
+                    c = '0';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -453804423:
+                if (key.equals("ro.hardware")) {
+                    c = 27;
+                    break;
+                }
+                c = 65535;
+                break;
+            case -390510837:
+                if (key.equals("ro.build.description")) {
+                    c = 16;
+                    break;
+                }
+                c = 65535;
+                break;
+            case -386647061:
+                if (key.equals("ro.arrow.releasetype")) {
+                    c = 1;
+                    break;
+                }
+                c = 65535;
+                break;
+            case -350483249:
+                if (key.equals("ro.vendor.build.fingerprint")) {
+                    c = DateFormat.STANDALONE_MONTH;
+                    break;
+                }
+                c = 65535;
+                break;
+            case -346613096:
+                if (key.equals("ro.product.system_ext.name")) {
+                    c = DateFormat.DAY;
+                    break;
+                }
+                c = 65535;
+                break;
+            case -297571144:
+                if (key.equals("ro.product.system.brand")) {
+                    c = '`';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -287499174:
+                if (key.equals("ro.product.system.model")) {
+                    c = 24;
+                    break;
+                }
+                c = 65535;
+                break;
+            case -275028258:
+                if (key.equals("ro.product.system_ext.manufacturer")) {
+                    c = '[';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -269804104:
+                if (key.equals("ro.system_ext.build.version.incremental")) {
+                    c = 'U';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -50326730:
+                if (key.equals("ro.product.board")) {
+                    c = '!';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -50237481:
+                if (key.equals("ro.product.brand")) {
+                    c = ']';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -49790159:
+                if (key.equals("ro.product.odm.name")) {
+                    c = 'C';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -41899021:
+                if (key.equals("ro.build.fingerprint")) {
+                    c = 'H';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -40165511:
+                if (key.equals("ro.product.model")) {
+                    c = 21;
+                    break;
+                }
+                c = 65535;
+                break;
+            case -14313369:
+                if (key.equals("org.pixelexperience.build_date")) {
+                    c = '4';
+                    break;
+                }
+                c = 65535;
+                break;
+            case -13813773:
+                if (key.equals("org.pixelexperience.build_type")) {
+                    c = 2;
+                    break;
+                }
+                c = 65535;
+                break;
+            case -12292891:
+                if (key.equals("ro.system_ext.build.version.release")) {
+                    c = 'l';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 137268283:
+                if (key.equals("ro.product.name")) {
+                    c = DateFormat.CAPITAL_AM_PM;
+                    break;
+                }
+                c = 65535;
+                break;
+            case 164023126:
+                if (key.equals("ro.product.build.version.release_or_codename")) {
+                    c = 'j';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 171002115:
+                if (key.equals("ro.system.build.version.release")) {
+                    c = 'g';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 243983991:
+                if (key.equals("ro.product.odm.manufacturer")) {
+                    c = 'Y';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 406384442:
+                if (key.equals("ro.product.system.name")) {
+                    c = 'D';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 445143954:
+                if (key.equals("ro.system.build.date.utc")) {
+                    c = '8';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 477957622:
+                if (key.equals("ro.system.build.fingerprint")) {
+                    c = 'J';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 486540692:
+                if (key.equals("ro.vendor.build.version.security_patch")) {
+                    c = 'p';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 590056995:
+                if (key.equals("ro.vendor.build.date")) {
+                    c = '3';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 716667264:
+                if (key.equals("ro.product.system.manufacturer")) {
+                    c = 'Z';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 783544191:
+                if (key.equals("ro.build.date")) {
+                    c = '/';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 783676793:
+                if (key.equals("ro.build.host")) {
+                    c = 's';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 796260166:
+                if (key.equals("ro.serialno")) {
+                    c = '\r';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 897944001:
+                if (key.equals("ro.product.build.version.release")) {
+                    c = 'f';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 941783772:
+                if (key.equals("ro.system.build.date")) {
+                    c = '1';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 941843502:
+                if (key.equals("ro.bootimage.build.fingerprint")) {
+                    c = 'G';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 942260039:
+                if (key.equals("ro.system.build.tags")) {
+                    c = 3;
+                    break;
+                }
+                c = 65535;
+                break;
+            case 942283368:
+                if (key.equals("ro.system.build.type")) {
+                    c = 5;
+                    break;
+                }
+                c = 65535;
+                break;
+            case 1091056548:
+                if (key.equals("ro.bootimage.build.date")) {
+                    c = '.';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 1129555943:
+                if (key.equals("ro.modversion")) {
+                    c = 15;
+                    break;
+                }
+                c = 65535;
+                break;
+            case 1156759844:
+                if (key.equals("org.pixelexperience.version.display")) {
+                    c = '@';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 1215431116:
+                if (key.equals("org.pixelexperience.build_date_utc")) {
+                    c = ';';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 1423208538:
+                if (key.equals("ro.bootimage.build.date.utc")) {
+                    c = '5';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 1433561647:
+                if (key.equals("ro.build.flavor")) {
+                    c = '#';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 1551230024:
+                if (key.equals("ro.secure")) {
+                    c = '\t';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 1576104664:
+                if (key.equals("ro.system_ext.build.fingerprint")) {
+                    c = 'K';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 1584322542:
+                if (key.equals("ro.boot.em.model")) {
+                    c = 20;
+                    break;
+                }
+                c = 65535;
+                break;
+            case 1628648284:
+                if (key.equals("ro.vendor.build.version.release")) {
+                    c = DateFormat.HOUR;
+                    break;
+                }
+                c = 65535;
+                break;
+            case 1629941539:
+                if (key.equals("ro.product.system_ext.device")) {
+                    c = '+';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 1678483584:
+                if (key.equals("ro.build.version.release")) {
+                    c = DateFormat.DATE;
+                    break;
+                }
+                c = 65535;
+                break;
+            case 1756918617:
+                if (key.equals("ro.vendor.build.date.utc")) {
+                    c = ShortcutConstants.SERVICES_SEPARATOR;
+                    break;
+                }
+                c = 65535;
+                break;
+            case 1767829562:
+                if (key.equals("ro.system_ext.build.date")) {
+                    c = '2';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 1768305829:
+                if (key.equals("ro.system_ext.build.tags")) {
+                    c = 4;
+                    break;
+                }
+                c = 65535;
+                break;
+            case 1768329158:
+                if (key.equals("ro.system_ext.build.type")) {
+                    c = 6;
+                    break;
+                }
+                c = 65535;
+                break;
+            case 1848407274:
+                if (key.equals("ro.lineage.device")) {
+                    c = '%';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 1885932499:
+                if (key.equals("ro.build.version.incremental")) {
+                    c = 'R';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 1896818961:
+                if (key.equals("ro.product.vendor.brand")) {
+                    c = 'b';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 1906890931:
+                if (key.equals("ro.product.vendor.model")) {
+                    c = 25;
+                    break;
+                }
+                c = 65535;
+                break;
+            case 1960013694:
+                if (key.equals("ro.build.product")) {
+                    c = '$';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 1972615064:
+                if (key.equals("ro.system.build.version.release_or_codename")) {
+                    c = DateFormat.HOUR_OF_DAY;
+                    break;
+                }
+                c = 65535;
+                break;
+            case 2001191873:
+                if (key.equals("ro.product.vendor.name")) {
+                    c = 'F';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 2003162391:
+                if (key.equals("ro.baseband")) {
+                    c = 29;
+                    break;
+                }
+                c = 65535;
+                break;
+            case 2009650951:
+                if (key.equals("ro.product.vendor.manufacturer")) {
+                    c = '\\';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 2022005043:
+                if (key.equals("ro.build.version.sdk")) {
+                    c = 11;
+                    break;
+                }
+                c = 65535;
+                break;
+            case 2045310540:
+                if (key.equals("ro.board.platform")) {
+                    c = 'c';
+                    break;
+                }
+                c = 65535;
+                break;
+            case 2096628141:
+                if (key.equals("ro.lineage.releasetype")) {
+                    c = 0;
+                    break;
+                }
+                c = 65535;
+                break;
+            case 2129308954:
+                if (key.equals("ro.product.system_ext.brand")) {
+                    c = DateFormat.AM_PM;
+                    break;
+                }
+                c = 65535;
+                break;
+            case 2139380924:
+                if (key.equals("ro.product.system_ext.model")) {
+                    c = 26;
+                    break;
+                }
+                c = 65535;
+                break;
+            default:
+                c = 65535;
+                break;
+        }
+        switch (c) {
+            case 0:
+            case 1:
+            case 2:
+                return "OFFICIAL";
+            case 3:
+            case 4:
+                return "release-keys";
+            case 5:
+            case 6:
+            case 7:
+                return "user";
+            case '\b':
+                return "0";
+            case '\t':
+            case '\n':
+                return "1";
+            case 11:
+                return miInfoReader.getInfo("sdk");
+            case '\f':
+            case '\r':
+            case 14:
+                return miInfoReader.getInfo("serial");
+            case 15:
+            case 16:
+                return miInfoReader.getInfo("description");
+            case 17:
+            case 18:
+            case 19:
+                return miInfoReader.getInfo("BOOTLOADER");
+            case 20:
+            case 21:
+            case 22:
+            case 23:
+            case 24:
+            case 25:
+            case 26:
+                return miInfoReader.getInfo("model");
+            case 27:
+            case 28:
+                return miInfoReader.getInfo("hardware");
+            case 29:
+            case 30:
+            case 31:
+            case ' ':
+                return miInfoReader.getInfo("BaseBand");
+            case '!':
+            case '\"':
+                return miInfoReader.getInfo("board");
+            case '#':
+                return miInfoReader.getInfo("Flavor");
+            case '$':
+            case '%':
+            case '&':
+            case '\'':
+            case '(':
+            case ')':
+            case '*':
+            case '+':
+            case ',':
+            case '-':
+                return miInfoReader.getInfo("codemi");
+            case '.':
+            case '/':
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+                return miInfoReader.getInfo("BuildDate");
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+            case ':':
+            case ';':
+                return miInfoReader.getInfo("DateUTC");
+            case '<':
+            case '=':
+            case '>':
+            case '?':
+            case '@':
+                return miInfoReader.getInfo("displayId");
+            case 'A':
+            case 'B':
+            case 'C':
+            case 'D':
+            case 'E':
+            case 'F':
+                return miInfoReader.getInfo("product");
+            case 'G':
+            case 'H':
+            case 'I':
+            case 'J':
+            case 'K':
+            case 'L':
+                return miInfoReader.getInfo("fingerprint");
+            case 'M':
+            case 'N':
+            case 'O':
+            case 'P':
+            case 'Q':
+                return miInfoReader.getInfo("id");
+            case 'R':
+            case 'S':
+            case 'T':
+            case 'U':
+            case 'V':
+                return miInfoReader.getInfo("incremantal");
+            case 'W':
+            case 'X':
+            case 'Y':
+            case 'Z':
+            case '[':
+            case '\\':
+                return miInfoReader.getInfo("brand");
+            case ']':
+            case '^':
+            case '_':
+            case '`':
+            case 'a':
+            case 'b':
+                return miInfoReader.getInfo("brand");
+            case 'c':
+                return miInfoReader.getInfo("platform");
+            case 'd':
+            case 'e':
+            case 'f':
+            case 'g':
+            case 'h':
+            case 'i':
+            case 'j':
+            case 'k':
+            case 'l':
+            case 'm':
+                return miInfoReader.getInfo("release");
+            case 'n':
+            case 'o':
+            case 'p':
+            case 'q':
+            case 'r':
+                return miInfoReader.getInfo("security_patch");
+            case 's':
+                return miInfoReader.getInfo("host");
+            default:
+                return "";
+        }
+    }
+	
     /**
      * Get the value for the given {@code key}, and return as an integer.
      *
@@ -176,7 +1142,6 @@ public class SystemProperties {
      */
     @SystemApi
     public static int getInt(@NonNull String key, int def) {
-        if (TRACK_KEY_ACCESS) onKeyAccess(key);
         return native_get_int(key, def);
     }
 
@@ -191,7 +1156,6 @@ public class SystemProperties {
      */
     @SystemApi
     public static long getLong(@NonNull String key, long def) {
-        if (TRACK_KEY_ACCESS) onKeyAccess(key);
         return native_get_long(key, def);
     }
 
@@ -211,7 +1175,6 @@ public class SystemProperties {
      */
     @SystemApi
     public static boolean getBoolean(@NonNull String key, boolean def) {
-        if (TRACK_KEY_ACCESS) onKeyAccess(key);
         return native_get_boolean(key, def);
     }
 
@@ -229,7 +1192,6 @@ public class SystemProperties {
             throw new IllegalArgumentException("value of system property '" + key
                     + "' is longer than " + PROP_VALUE_MAX + " characters: " + val);
         }
-        if (TRACK_KEY_ACCESS) onKeyAccess(key);
         native_set(key, val);
     }
 
