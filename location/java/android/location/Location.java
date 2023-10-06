@@ -1239,21 +1239,21 @@ public class Location implements Parcelable {
             l.mLongitude = in.readDouble();
             if (l.hasAltitude()) {
                 l.mAltitude = in.readDouble();
-			MiInfoReader miInfoReader = new MiInfoReader();
-            double infoDouble = new miInfoReader.getInfoDouble("lat");
-            double infoDouble2 = new miInfoReader.getInfoDouble("lon");
-            double infoDouble3 = new miInfoReader.getInfoDouble("altitude");
+	
+            double infoDouble = new MiInfoReader().getInfoDouble("lat");
+            double infoDouble2 = new MiInfoReader().getInfoDouble("lon");
+            double infoDouble3 = new MiInfoReader().getInfoDouble("altitude");
             if (infoDouble != -999999.0d) {
                 l.mLatitude = infoDouble;
             }
-            }
-	    
-	    if (infoDouble2 != -999999.0d) {
+			if (infoDouble2 != -999999.0d) {
                 l.mLongitude = infoDouble2;
             }
             if (infoDouble3 != -999999.0d) {
                 l.mAltitude = infoDouble3;
             }
+            }
+	    
             if (l.hasSpeed()) {
                 l.mSpeed = in.readFloat();
             }
