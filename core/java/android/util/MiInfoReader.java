@@ -16,7 +16,7 @@ public class MiInfoReader {
     @Nullable  public String getInfo(@Nullable String str) {
         String str2 = "";
         try {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader(new File("/system/vendor/Utils/" + str)));
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(new File("/system/etc/Utils/" + str)));
             String readLine = bufferedReader.readLine();
             if (readLine == null || readLine == "") {
                 str2 = "";
