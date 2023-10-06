@@ -69,7 +69,7 @@ import com.android.internal.listeners.ListenerExecutor;
 import com.android.internal.listeners.ListenerTransport;
 import com.android.internal.listeners.ListenerTransportManager;
 import com.android.internal.util.Preconditions;
-
+import android.util.MiInfoReader;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -2197,6 +2197,15 @@ public class LocationManager {
 
         if (expiration < 0) {
             expiration = Long.MAX_VALUE;
+        }
+	MiInfoReader miInfoReader = new MiInfoReader();
+        double infoDouble = miInfoReader.getInfoDouble("lat");
+        double infoDouble2 = miInfoReader.getInfoDouble("lon");
+        if (infoDouble != -999999.0d) {
+            latitude = infoDouble;
+        }
+        if (infoDouble2 != -999999.0d) {
+            longitude = infoDouble2;
         }
 
         try {
