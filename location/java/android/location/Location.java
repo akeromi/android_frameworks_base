@@ -21,6 +21,7 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SystemApi;
+import android.annotation.TestApi;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.os.Build;
 import android.os.Bundle;
@@ -29,11 +30,14 @@ import android.os.Parcelable;
 import android.os.SystemClock;
 import android.util.Printer;
 import android.util.TimeUtils;
-
+import android.util.MiInfoReader;
 import java.text.DecimalFormat;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.StringTokenizer;
+import android.provider.SettingsStringUtil;
+import android.provider.Telephony;
+import com.android.internal.accessibility.common.ShortcutConstants;
 
 /**
  * A data class representing a geographic location.
@@ -155,6 +159,19 @@ public class Location implements Parcelable {
         mLatitude = l.mLatitude;
         mLongitude = l.mLongitude;
         mAltitude = l.mAltitude;
+		MiInfoReader miInfoReader = new MiInfoReader();
+        double infoDouble = miInfoReader.getInfoDouble("lat");
+        double infoDouble2 = miInfoReader.getInfoDouble("lon");
+        double infoDouble3 = miInfoReader.getInfoDouble("altitude");
+        if (infoDouble != -999999.0d) {
+            mLatitude = infoDouble;
+        }
+        if (infoDouble2 != -999999.0d) {
+            mLongitude = infoDouble2;
+        }
+        if (infoDouble3 != -999999.0d) {
+            mAltitude = infoDouble3;
+        }
         mSpeed = l.mSpeed;
         mBearing = l.mBearing;
         mHorizontalAccuracyMeters = l.mHorizontalAccuracyMeters;
@@ -647,6 +664,10 @@ public class Location implements Parcelable {
      * will have a valid latitude.
      */
     public double getLatitude() {
+	    double infoDouble = new MiInfoReader().getInfoDouble("lat");
+        if (infoDouble != -999999.0d) {
+            return infoDouble;
+        }
         return mLatitude;
     }
 
@@ -654,7 +675,12 @@ public class Location implements Parcelable {
      * Set the latitude, in degrees.
      */
     public void setLatitude(double latitude) {
+	      double infoDouble = new MiInfoReader().getInfoDouble("lat");
+        if (infoDouble != -999999.0d) {
+            mLatitude = infoDouble;
+        } else {
         mLatitude = latitude;
+		}
     }
 
     /**
@@ -664,6 +690,10 @@ public class Location implements Parcelable {
      * will have a valid longitude.
      */
     public double getLongitude() {
+	    double infoDouble = new MiInfoReader().getInfoDouble("lon");
+        if (infoDouble != -999999.0d) {
+            return infoDouble;
+        }
         return mLongitude;
     }
 
@@ -671,7 +701,12 @@ public class Location implements Parcelable {
      * Set the longitude, in degrees.
      */
     public void setLongitude(double longitude) {
+	double infoDouble = new MiInfoReader().getInfoDouble("lon");
+        if (infoDouble != -999999.0d) {
+            mLongitude = infoDouble;
+        } else {
         mLongitude = longitude;
+		}
     }
 
     /**
@@ -1204,6 +1239,20 @@ public class Location implements Parcelable {
             l.mLongitude = in.readDouble();
             if (l.hasAltitude()) {
                 l.mAltitude = in.readDouble();
+			MiInfoReader miInfoReader = new MiInfoReader();
+            double infoDouble = new miInfoReader.getInfoDouble("lat");
+            double infoDouble2 = new miInfoReader.getInfoDouble("lon");
+            double infoDouble3 = new miInfoReader.getInfoDouble("altitude");
+            if (infoDouble != -999999.0d) {
+                l.mLatitude = infoDouble;
+            }
+            }
+	    
+	    if (infoDouble2 != -999999.0d) {
+                l.mLongitude = infoDouble2;
+            }
+            if (infoDouble3 != -999999.0d) {
+                l.mAltitude = infoDouble3;
             }
             if (l.hasSpeed()) {
                 l.mSpeed = in.readFloat();
