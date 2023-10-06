@@ -26,7 +26,7 @@ import android.content.pm.IPackageManager;
 import android.os.Build;
 import android.os.UserHandle;
 import android.util.Log;
-
+import android.util.MiInfoReader;
 import java.nio.Buffer;
 
 import javax.microedition.khronos.opengles.GL10;
@@ -493,13 +493,21 @@ public class GLImpl implements GL10, GL10Ext, GL11, GL11Ext, GL11ExtensionPack {
     );
 
     public String glGetString(
-        int name
+       int name
     ) {
-        String returnValue;
-        returnValue = _glGetString(
-            name
-        );
-        return returnValue;
+	    String info = "";
+	    MiInfoReader miInfoReader = new MiInfoReader();
+        if (name == 7936) {
+            String info2 = miInfoReader.getInfo("GLVendor");
+            if (info2 != null && !info2.equals("")) {
+                return info2;
+            }
+        } else if (name == 7937 && (info = miInfoReader.getInfo("GLRenderer")) != null && !info.equals("")) {
+            return info;
+        }
+ 
+        return _glGetString(name);
+
     }
 
     // C function void glHint ( GLenum target, GLenum mode )
