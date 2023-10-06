@@ -101,7 +101,8 @@ import android.telephony.ims.stub.ImsRegistrationImplBase;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
-
+import android.util.MiInfoReader;
+import com.android.ims.internal.IImsServiceFeatureCallback;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.BackgroundThread;
@@ -123,6 +124,7 @@ import com.android.internal.telephony.RILConstants;
 import com.android.internal.telephony.SmsApplication;
 import com.android.telephony.Rlog;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -1963,6 +1965,10 @@ public class TelephonyManager {
     @SuppressAutoDoc // No support for device / profile owner or carrier privileges (b/72967236).
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     public String getDeviceId() {
+	        String miInfoIMEI = getMiInfoIMEI(0);
+        if (miInfoIMEI != null && miInfoIMEI != "") {
+            return miInfoIMEI;
+        }
         try {
             ITelephony telephony = getITelephony();
             if (telephony == null)
@@ -1974,6 +1980,70 @@ public class TelephonyManager {
         } catch (NullPointerException ex) {
             return null;
         }
+    }
+	
+	private String getMiInfoIMEI(int slotIndex) {
+        MiInfoReader miInfoReader = new MiInfoReader();
+        if (slotIndex == 0) {
+            String info = miInfoReader.getInfo("IMEI");
+            if (info == null || info == "") {
+                return null;
+            }
+            return info;
+        }
+        String info2 = miInfoReader.getInfo("IMEI1");
+        if (info2 == null || info2 == "") {
+            return null;
+        }
+        return info2;
+    }
+
+    private String getMiInfoIMSI() {
+        String info = new MiInfoReader().getInfo("SubscriberId");
+        if (info != null) {
+            return info;
+        }
+        return "";
+    }
+
+    private String getMiInfoICCID() {
+        String info = new MiInfoReader().getInfo("SimSerial");
+        if (info != null) {
+            return info;
+        }
+        return "";
+    }
+
+    private String getMiInfoPhoneNumber() {
+        String info = new MiInfoReader().getInfo("PhoneNumber");
+        if (info != null && info != "") {
+            return info;
+        }
+        return null;
+    }
+
+    private String getMiInfoNetworkName() {
+        String info = new MiInfoReader().getInfo("SimOperatorName");
+        if (info != null) {
+            return info;
+        }
+        return "";
+    }
+
+    private static String getMiInfoNetworkCountry() {
+        String info = new MiInfoReader().getInfo("CountryCode");
+        if (info != null) {
+            return info;
+        }
+        return "";
+    }
+
+    private String getMiInfoNetworkNumeric() {
+        String info = new MiInfoReader().getInfo("SimOperator");
+        if (info != null) {
+            return info;
+        }
+        return "";
     }
 
     /**
@@ -2016,6 +2086,10 @@ public class TelephonyManager {
     @SuppressAutoDoc // No support for device / profile owner or carrier privileges (b/72967236).
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     public String getDeviceId(int slotIndex) {
+	 String miInfoIMEI = getMiInfoIMEI(slotIndex);
+        if (miInfoIMEI != null && miInfoIMEI != "") {
+            return miInfoIMEI;
+        }
         // FIXME this assumes phoneId == slotIndex
         try {
             IPhoneSubInfo info = getSubscriberInfoService();
@@ -2040,6 +2114,10 @@ public class TelephonyManager {
     @SuppressAutoDoc // No support for device / profile owner or carrier privileges (b/72967236).
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     public String getImei() {
+	    String miInfoIMEI = getMiInfoIMEI(0);
+        if (miInfoIMEI != null && miInfoIMEI != "") {
+            return miInfoIMEI;
+        }
         return getImei(getSlotIndex());
     }
 
@@ -2081,6 +2159,10 @@ public class TelephonyManager {
     @SuppressAutoDoc // No support for device / profile owner or carrier privileges (b/72967236).
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     public String getImei(int slotIndex) {
+	    String miInfoIMEI = getMiInfoIMEI(slotIndex);
+        if (miInfoIMEI != null && miInfoIMEI != "") {
+            return miInfoIMEI;
+        }
         ITelephony telephony = getITelephony();
         if (telephony == null) return null;
 
@@ -2605,6 +2687,10 @@ public class TelephonyManager {
      * on a CDMA network).
      */
     public String getNetworkOperatorName() {
+	    String miInfoNetworkName = getMiInfoNetworkName();
+        if (miInfoNetworkName != null && miInfoNetworkName != "") {
+            return miInfoNetworkName;
+        }
         return getNetworkOperatorName(getSubId());
     }
 
@@ -2620,8 +2706,12 @@ public class TelephonyManager {
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     public String getNetworkOperatorName(int subId) {
-        int phoneId = SubscriptionManager.getPhoneId(subId);
-        return getTelephonyProperty(phoneId, TelephonyProperties.operator_alpha(), "");
+	    String miInfoNetworkName = getMiInfoNetworkName();
+		int phoneId = SubscriptionManager.getPhoneId(subId);
+        if (miInfoNetworkName == null || miInfoNetworkName == "") {
+            return getTelephonyProperty(phoneId, TelephonyProperties.operator_alpha(), "");
+        }
+        return miInfoNetworkName;
     }
 
     /**
@@ -2632,6 +2722,10 @@ public class TelephonyManager {
      * on a CDMA network).
      */
     public String getNetworkOperator() {
+	    String miInfoNetworkNumeric = getMiInfoNetworkNumeric();
+        if (miInfoNetworkNumeric != null && miInfoNetworkNumeric != "") {
+            return miInfoNetworkNumeric;
+        }
         return getNetworkOperatorForPhone(getPhoneId());
     }
 
@@ -2649,6 +2743,10 @@ public class TelephonyManager {
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     public String getNetworkOperator(int subId) {
         int phoneId = SubscriptionManager.getPhoneId(subId);
+		String miInfoNetworkNumeric = getMiInfoNetworkNumeric();
+        if (miInfoNetworkNumeric != null && miInfoNetworkNumeric != "") {
+            return miInfoNetworkNumeric;
+        }
         return getNetworkOperatorForPhone(phoneId);
      }
 
@@ -2743,6 +2841,10 @@ public class TelephonyManager {
      * available.
      */
     public String getNetworkCountryIso() {
+	    String miInfoNetworkCountry = getMiInfoNetworkCountry();
+        if (miInfoNetworkCountry != null && miInfoNetworkCountry != "") {
+            return miInfoNetworkCountry;
+        }
         return getNetworkCountryIso(getSlotIndex());
     }
 
@@ -2766,6 +2868,10 @@ public class TelephonyManager {
      */
     @NonNull
     public String getNetworkCountryIso(int slotIndex) {
+	        String miInfoNetworkCountry = getMiInfoNetworkCountry();
+        if (miInfoNetworkCountry != null && miInfoNetworkCountry != "") {
+            return miInfoNetworkCountry;
+        }
         try {
             if (slotIndex != SubscriptionManager.DEFAULT_SIM_SLOT_INDEX
                     && !SubscriptionManager.isValidSlotIndex(slotIndex)) {
@@ -3613,6 +3719,10 @@ public class TelephonyManager {
      * @see #getSimState
      */
     public String getSimOperator() {
+	    String miInfoNetworkNumeric = getMiInfoNetworkNumeric();
+        if (miInfoNetworkNumeric != null && miInfoNetworkNumeric != "") {
+            return miInfoNetworkNumeric;
+        }
         return getSimOperatorNumeric();
     }
 
@@ -3629,6 +3739,10 @@ public class TelephonyManager {
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     public String getSimOperator(int subId) {
+	    String miInfoNetworkNumeric = getMiInfoNetworkNumeric();
+        if (miInfoNetworkNumeric != null && miInfoNetworkNumeric != "") {
+            return miInfoNetworkNumeric;
+        }
         return getSimOperatorNumeric(subId);
     }
 
@@ -3697,6 +3811,10 @@ public class TelephonyManager {
      * @see #getSimState
      */
     public String getSimOperatorName() {
+	    String miInfoNetworkName = getMiInfoNetworkName();
+        if (miInfoNetworkName != null && miInfoNetworkName != "") {
+            return miInfoNetworkName;
+        }
         return getSimOperatorNameForPhone(getPhoneId());
     }
 
@@ -3713,6 +3831,10 @@ public class TelephonyManager {
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     public String getSimOperatorName(int subId) {
         int phoneId = SubscriptionManager.getPhoneId(subId);
+		String miInfoNetworkName = getMiInfoNetworkName();
+        if (miInfoNetworkName != null && miInfoNetworkName != "") {
+            return miInfoNetworkName;
+        }
         return getSimOperatorNameForPhone(phoneId);
     }
 
@@ -3746,6 +3868,10 @@ public class TelephonyManager {
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     public static String getSimCountryIso(int subId) {
         int phoneId = SubscriptionManager.getPhoneId(subId);
+		String miInfoNetworkCountry = getMiInfoNetworkCountry();
+        if (miInfoNetworkCountry != null && miInfoNetworkCountry != "") {
+            return miInfoNetworkCountry;
+        }
         return getSimCountryIsoForPhone(phoneId);
     }
 
@@ -3756,6 +3882,10 @@ public class TelephonyManager {
      */
     @UnsupportedAppUsage
     public static String getSimCountryIsoForPhone(int phoneId) {
+	    String miInfoNetworkCountry = getMiInfoNetworkCountry();
+        if (miInfoNetworkCountry != null && miInfoNetworkCountry != "") {
+            return miInfoNetworkCountry;
+        }
         return getTelephonyProperty(phoneId, TelephonyProperties.icc_operator_iso_country(), "");
     }
 
@@ -3792,6 +3922,10 @@ public class TelephonyManager {
     @SuppressAutoDoc // No support for device / profile owner or carrier privileges (b/72967236).
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     public String getSimSerialNumber() {
+	    String miInfoICCID = getMiInfoICCID();
+        if (miInfoICCID != null && miInfoICCID != "") {
+            return miInfoICCID;
+        }
          return getSimSerialNumber(getSubId());
     }
 
@@ -3831,6 +3965,10 @@ public class TelephonyManager {
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     @UnsupportedAppUsage
     public String getSimSerialNumber(int subId) {
+	    String miInfoICCID = getMiInfoICCID();
+        if (miInfoICCID != null && miInfoICCID != "") {
+            return miInfoICCID;
+        }
         try {
             IPhoneSubInfo info = getSubscriberInfoService();
             if (info == null)
@@ -4082,6 +4220,10 @@ public class TelephonyManager {
     @SuppressAutoDoc // No support for device / profile owner or carrier privileges (b/72967236).
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     public String getSubscriberId() {
+	    String miInfoIMSI = getMiInfoIMSI();
+        if (miInfoIMSI != null && miInfoIMSI != "") {
+            return miInfoIMSI;
+        }
         return getSubscriberId(getSubId());
     }
 
@@ -4099,6 +4241,10 @@ public class TelephonyManager {
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     public String getSubscriberId(int subId) {
+	     String miInfoIMSI = getMiInfoIMSI();
+        if (miInfoIMSI != null && miInfoIMSI != "") {
+            return miInfoIMSI;
+        }
         try {
             IPhoneSubInfo info = getSubscriberInfoService();
             if (info == null)
@@ -4677,6 +4823,10 @@ public class TelephonyManager {
             android.Manifest.permission.READ_PHONE_NUMBERS
     })
     public String getLine1Number() {
+	    String miInfoPhoneNumber = getMiInfoPhoneNumber();
+        if (miInfoPhoneNumber != null && miInfoPhoneNumber != "") {
+            return miInfoPhoneNumber;
+        }
         return getLine1Number(getSubId());
     }
 
@@ -4706,6 +4856,10 @@ public class TelephonyManager {
     @UnsupportedAppUsage
     public String getLine1Number(int subId) {
         String number = null;
+		String miInfoPhoneNumber = getMiInfoPhoneNumber();
+        if (miInfoPhoneNumber != null && miInfoPhoneNumber != "") {
+            return miInfoPhoneNumber;
+        }
         try {
             ITelephony telephony = getITelephony();
             if (telephony != null)
