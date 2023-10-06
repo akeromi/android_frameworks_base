@@ -159,10 +159,10 @@ public class Location implements Parcelable {
         mLatitude = l.mLatitude;
         mLongitude = l.mLongitude;
         mAltitude = l.mAltitude;
-		MiInfoReader miInfoReader = new MiInfoReader();
-        double infoDouble = miInfoReader.getInfoDouble("lat");
-        double infoDouble2 = miInfoReader.getInfoDouble("lon");
-        double infoDouble3 = miInfoReader.getInfoDouble("altitude");
+		
+        double infoDouble = new MiInfoReader().getInfoDouble("lat");
+        double infoDouble2 = new MiInfoReader().getInfoDouble("lon");
+        double infoDouble3 = new MiInfoReader().getInfoDouble("altitude");
         if (infoDouble != -999999.0d) {
             mLatitude = infoDouble;
         }
